@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   urg_node
+  roboteq
 )
 
 ## System dependencies are found with CMake's conventions
@@ -70,6 +71,7 @@ find_package(catkin REQUIRED COMPONENTS
    DEPENDENCIES
    sensor_msgs
    std_msgs
+   roboteq
 )
 
 ###################################
@@ -84,7 +86,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES hallway_nav
-  CATKIN_DEPENDS roscpp sensor_msgs std_msgs urg_node
+  CATKIN_DEPENDS roscpp sensor_msgs std_msgs urg_node roboteq
 #  DEPENDS system_lib
 )
 
@@ -101,7 +103,7 @@ include_directories(
 
 ## Declare a cpp library
 # add_library(hallway_nav
-#   src/${PROJECT_NAME}/hallway_nav.cpp
+#  src/${PROJECT_NAME}/hallway_nav.cpp
 # )
 
 ## Declare a cpp executable

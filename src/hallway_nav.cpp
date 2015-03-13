@@ -7,7 +7,7 @@
 
 #include "roboteq/MotorCommands.h"
 
-const int ARRAY_SIZE = 726;
+//const int ARRAY_SIZE = 726;
 
 float angleMin;
 float angleMax;
@@ -16,54 +16,9 @@ float timeInc;
 float scanTime;
 float rangeMin;
 float rangeMax;
-float rangeData[ARRAY_SIZE];
+float rangeData[726];
 int counter = 0;
 ros::Publisher publisher;
-
-void processRangefinderData(const sensor_msgs::LaserScan::ConstPtr& msg)
-{
-	//ROS_INFO("Header: %i", msg->header);
-	angleMin = (float)(msg->angle_min);
-	angleMax = (float)(msg->angle_max);
-	angleInc = (float)(msg->angle_increment);
-	timeInc = (float)(msg->time_increment);
-	scanTime = (float)(msg->scan_time);
-	rangeMin = (float)(msg->range_min);
-	rangeMax = (float)(msg->range_max);
-
-	for(int i = 0; i < ARRAY_SIZE; i++)
-	{
-		rangeData[i] = (float)(msg->ranges[i]);
-	}
-
-
-	if(counter < 20)
-	{
-		/*ROS_INFO("angleMin = %f", angleMin);
-		ROS_INFO("angleMax = %f", angleMax);
-		ROS_INFO("angleInc = %f", angleInc);
-		ROS_INFO("timeInc = %f", timeInc);
-		ROS_INFO("scanTime = %f", scanTime);
-		ROS_INFO("rangeMin = %f", rangeMin);
-		ROS_INFO("rangeMax = %f", rangeMax);*/
-
-		//ROS_INFO("random point %f", rangeData[363]);
-
-		/*for(int i = 0; i < ARRAY_SIZE; i++)
-		{
-			ROS_INFO("scanData = %f", rangeData[i]);
-		}*/
-
-		counter++;
-	}
-
-	ROS_INFO("random point %f", rangeData[363]);
-
-	/*ROS_INFO("angleMin = %f", angleMin);
-	ROS_INFO("angleMax = %f", angleMax);
-	ROS_INFO("rangeMin = %f", rangeMin);
-	ROS_INFO("rangeMax = %f", rangeMax);*/
-}
 
 void autonomousHallwayNav(float range[])
 {
@@ -76,39 +31,37 @@ void autonomousHallwayNav(float range[])
 	ROS_INFO("Checking Sides: ");
 
 	//right side
-	for(int i = 0; i < 280; i++)
+	for(int i = 1; i < 201; i++)
 	{
-		if(range[i] < 1 && range[i] > 0.015)
+		if(range[i] < .5 && range[i] > 0.02)
 		{
+			ROS_INFO("%i %f", i, range[i]);
 			ROS_INFO("Right side is too close!");
+			rightSideDetect = true;
+			break;
 		}
-
-		rightSideDetect = true;
-		break;
 	}
 
 	//front
-	for(int i = 280; i < 440; i++)
+	for(int i = 201; i < 525; i++)
 	{
-		if(range[i] < 1 && range[i] > 0.015)
+		if(range[i] < .5 && range[i] > 0.02)
 		{
 			ROS_INFO("Obstacle in front, stopping!");
+			frontSideDetect = true;
+			break;
 		}
-
-		frontSideDetect = true;
-		break;
 	}
 
 	//left
-	for(int i = 440; i < 726; i++)
+	for(int i = 525; i < 726; i++)
 	{
-		if(range[i] < 1 && range[i] > 0.015)
+		if(range[i] < .5 && range[i] > 0.02)
 		{
 			ROS_INFO("Left side is too close!");
+			leftSideDetect = true;
+			break;
 		}
-
-		leftSideDetect = true;
-		break;
 	}
 
 	//left side
@@ -216,13 +169,68 @@ void autonomousHallwayNav(float range[])
 
 	//Send motor commands to motorController...
 	roboteq::MotorCommands msg;
-	msg.leftMotor = leftMotor;
-	msg.rightMotor = rightMotor;
+	msg.leftMotor = leftMotor * .5;
+	msg.rightMotor = rightMotor * .5;
 
-	ROS_INFO("Something more meaningful.");
+	ROS_INFO("Sending motor msg %i %i", msg.leftMotor, msg.rightMotor);
 	publisher.publish(msg);
 }
 
+void processRangefinderData(const sensor_msgs::LaserScan::ConstPtr& msg)
+{
+	int array_size = msg->ranges.size();
+	//ROS_INFO("Header: %i", msg->header);
+	angleMin = (float)(msg->angle_min);
+	angleMax = (float)(msg->angle_max);
+	angleInc = (float)(msg->angle_increment);
+	timeInc = (float)(msg->time_increment);
+	scanTime = (float)(msg->scan_time);
+	rangeMin = (float)(msg->range_min);
+	rangeMax = (float)(msg->range_max);
+
+	for(int i = 0; i < array_size; i++)
+	{
+		if((float)msg->ranges[i] == std::numeric_limits<float>::quiet_NaN())
+		{
+			ROS_INFO("SHIT THINGS ARE BLOWING UP");
+			rangeData[i] = rangeMax;
+		}
+		else
+		{
+			rangeData[i] = (float)(msg->ranges[i]);
+		}
+	}
+
+
+	if(counter < 20)
+	{
+		/*ROS_INFO("angleMin = %f", angleMin);
+		ROS_INFO("angleMax = %f", angleMax);
+		ROS_INFO("angleInc = %f", angleInc);
+		ROS_INFO("timeInc = %f", timeInc);
+		ROS_INFO("scanTime = %f", scanTime);
+		ROS_INFO("rangeMin = %f", rangeMin);
+		ROS_INFO("rangeMax = %f", rangeMax);*/
+
+		//ROS_INFO("random point %f", rangeData[363]);
+
+		/*for(int i = 0; i < array_size; i++)
+		{
+			ROS_INFO("scanData = %f", rangeData[i]);
+		}*/
+
+		counter++;
+	}
+
+	ROS_INFO("random point %f", rangeData[363]);
+
+	/*ROS_INFO("angleMin = %f", angleMin);
+	ROS_INFO("angleMax = %f", angleMax);
+	ROS_INFO("rangeMin = %f", rangeMin);
+	ROS_INFO("rangeMax = %f", rangeMax);*/
+
+	autonomousHallwayNav(rangeData);
+}
 
 int main(int argc, char **argv)
 {
