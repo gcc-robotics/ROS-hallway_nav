@@ -31,7 +31,7 @@ void autonomousHallwayNav(float range[])
 	ROS_INFO("Checking Sides: ");
 
 	//right side
-	for(int i = 1; i < 201; i++)
+	for(int i = 70; i < 150; i++)
 	{
 		if(range[i] < .5 && range[i] > 0.02)
 		{
@@ -42,8 +42,8 @@ void autonomousHallwayNav(float range[])
 		}
 	}
 
-	//front
-	for(int i = 201; i < 525; i++)
+	//front 
+	for(int i = 353; i < 373; i++)
 	{
 		if(range[i] < .5 && range[i] > 0.02)
 		{
@@ -54,7 +54,7 @@ void autonomousHallwayNav(float range[])
 	}
 
 	//left
-	for(int i = 525; i < 726; i++)
+	for(int i = 576; i < 656; i++)
 	{
 		if(range[i] < .5 && range[i] > 0.02)
 		{
@@ -68,13 +68,13 @@ void autonomousHallwayNav(float range[])
 	if(leftSideDetect && !rightSideDetect && !frontSideDetect)
 	{
 		leftMotor = 100;
-		rightMotor = 50;
+		rightMotor = 75;
 	}
 
 	//right side
 	else if(!leftSideDetect && rightSideDetect && !frontSideDetect)
 	{
-		leftMotor = 50;
+		leftMotor = 75;
 		rightMotor = 100;
 	}
 
@@ -82,13 +82,13 @@ void autonomousHallwayNav(float range[])
 	else if(leftSideDetect && !rightSideDetect && frontSideDetect)
 	{
 		leftMotor = 75;
-		rightMotor = -75;
+		rightMotor = -25;
 	}
 
 	//front and right
 	else if(!leftSideDetect && rightSideDetect && frontSideDetect)
 	{
-		leftMotor = -75;
+		leftMotor = -25;
 		rightMotor = 75;
 	}
 
@@ -117,13 +117,15 @@ void autonomousHallwayNav(float range[])
 	//nothing detected
 	else
 	{
-		int leftDistance = 0;
-		int rightDistance = 0;
+		ROS_INFO("Centering...");
+
+		float leftDistance = 0;
+		float rightDistance = 0;
 
 		//left side
-		for(int i = 440; i < 726; i++)
+		for(int i = 586; i < 676; i++)
 		{
-			if(range[i] < 0.015)
+			if(range[i] < 0.02)
 			{
 				leftDistance += 5;
 			}
@@ -133,12 +135,12 @@ void autonomousHallwayNav(float range[])
 			}
 		}
 
-		leftDistance /= (726-440);
+		leftDistance /= 90;
 
 		//right side
-		for(int i = 0; i < 280; i++)
+		for(int i = 50; i < 140; i++)
 		{
-			if(range[i] < 0.015)
+			if(range[i] < 0.02)
 			{
 				rightDistance += 5;
 			}
@@ -148,17 +150,19 @@ void autonomousHallwayNav(float range[])
 			}
 		}
 
-		rightDistance /= 280;
+		rightDistance /= 90;
 
-		if(rightDistance < leftDistance)
+		if(rightDistance < leftDistance && leftDistance != 0)
 		{
-			leftMotor = ((rightDistance/leftDistance) + 0.2) * 100;
+			ROS_INFO("Centering to right...");
+			leftMotor = ((rightDistance/leftDistance) + 0.3) * 100.0;
 			rightMotor = 100;
 		}
-		else if(leftDistance < rightDistance)
+		else if(leftDistance < rightDistance && rightDistance != 0)
 		{
+			ROS_INFO("Centering to left...");
 			leftMotor = 100;
-			rightMotor = ((leftDistance/rightDistance) + 0.2) * 100;
+			rightMotor = ((leftDistance/rightDistance) + 0.3) * 100.0;
 		}
 		else
 		{
@@ -167,10 +171,21 @@ void autonomousHallwayNav(float range[])
 		}
 	}
 
+	// Limits
+	if(leftMotor > 100)
+	{
+		leftMotor = 100;
+	}
+
+	if(rightMotor > 100)
+	{
+		rightMotor = 100;
+	}
+
 	//Send motor commands to motorController...
 	roboteq::MotorCommands msg;
-	msg.leftMotor = leftMotor * .5;
-	msg.rightMotor = rightMotor * .5;
+	msg.leftMotor = rightMotor * .5;
+	msg.rightMotor = leftMotor * .5;
 
 	ROS_INFO("Sending motor msg %i %i", msg.leftMotor, msg.rightMotor);
 	publisher.publish(msg);

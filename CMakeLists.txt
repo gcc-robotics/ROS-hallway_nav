@@ -67,12 +67,12 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
- generate_messages(
-   DEPENDENCIES
-   sensor_msgs
-   std_msgs
-   roboteq
-)
+# generate_messages(
+#   DEPENDENCIES
+#   sensor_msgs
+#   std_msgs
+#   roboteq
+#)
 
 ###################################
 ## catkin specific configuration ##
@@ -84,7 +84,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
+  #INCLUDE_DIRS include
   LIBRARIES hallway_nav
   CATKIN_DEPENDS roscpp sensor_msgs std_msgs urg_node roboteq
 #  DEPENDS system_lib
