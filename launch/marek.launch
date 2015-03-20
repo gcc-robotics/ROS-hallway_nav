@@ -1,0 +1,5 @@
+<launch>
+	<node name="$(anon urg_node)" pkg="urg_node" type="urg_node" />
+	<!--<node name="$(anon roboteq_node)" pkg="roboteq" type="roboteq_node" />-->
+	<node name="$(anon hallway_nav)" pkg="hallway_nav" type="hallway_nav" />
+</launch>
